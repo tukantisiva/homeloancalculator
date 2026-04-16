@@ -135,7 +135,7 @@
     input[type="range"]::-webkit-slider-thumb:hover {
       transform: scale(1.15);
     }
-    
+
     .market-slider::-webkit-slider-thumb {
       background: var(--invest) !important;
       box-shadow: 0 0 10px var(--invest-glow) !important;
@@ -284,7 +284,7 @@
       background: var(--accent);
       box-shadow: 0 0 10px var(--accent-glow);
     }
-    
+
     .stat-card.glow-purple::before {
       content: '';
       position: absolute;
@@ -314,7 +314,7 @@
     .stat-value.green {
       color: var(--accent);
     }
-    
+
     .stat-value.invest {
       color: var(--invest);
     }
@@ -404,7 +404,7 @@
   <div class="dashboard">
     <!-- Left Controls Panel -->
     <div class="panel">
-      <h1>Pro Loan Engine</h1>
+      <h1>Home Loan Engine with Payoff & Investment</h1>
       <p class="subtitle">Interactive payoff visualization</p>
 
       <div class="control-group">
@@ -467,23 +467,29 @@
           </label>
         </div>
         <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px; line-height: 1.4;">
-          Computes a 15% lump-sum payload at the start of specific years. Simulates both <span style="color:var(--accent); font-weight:600">Payoff Strategy</span> and <span style="color:var(--invest); font-weight:600">Invest Strategy</span> simultaneously.
+          Computes a 15% lump-sum payload at the start of specific years. Simulates both <span
+            style="color:var(--accent); font-weight:600">Payoff Strategy</span> and <span
+            style="color:var(--invest); font-weight:600">Invest Strategy</span> simultaneously.
         </p>
-        
+
         <div id="stratControls" style="display:none;">
           <div class="control-group" style="margin-bottom:12px">
             <label style="color:var(--accent);">Activation Years</label>
-            <input type="text" id="lumpYears" value="2, 5, 10" style="margin-top:8px; border-color: rgba(16,185,129,0.3)">
+            <input type="text" id="lumpYears" value="2, 5, 10"
+              style="margin-top:8px; border-color: rgba(16,185,129,0.3)">
           </div>
-          
-          <div class="control-group" style="margin-bottom:0; padding-top:12px; border-top:1px solid rgba(255,255,255,0.05)">
+
+          <div class="control-group"
+            style="margin-bottom:0; padding-top:12px; border-top:1px solid rgba(255,255,255,0.05)">
             <div class="control-header">
               <label style="color:var(--invest);">Est. Market Return (% Yearly)</label>
-              <div class="value-display" id="marketRateVal" style="color:var(--invest); background: rgba(192,132,252,0.1);">8.0%</div>
+              <div class="value-display" id="marketRateVal"
+                style="color:var(--invest); background: rgba(192,132,252,0.1);">8.0%</div>
             </div>
             <input type="range" id="marketRateRange" class="market-slider" min="1" max="25" step="0.1" value="8.0">
             <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.3;">
-              Transparency: Calculates monthly compounding on your lump-sum injections. Historically, the S&P 500 averages ~10% annually, while conservative portfolios range 5-8%.
+              Transparency: Calculates monthly compounding on your lump-sum injections. Historically, the S&P 500
+              averages ~10% annually, while conservative portfolios range 5-8%.
             </div>
           </div>
         </div>
@@ -504,21 +510,24 @@
           <div class="stat-value green" id="statTime">0 Yrs</div>
           <div id="statTimeCtx" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">out of 0 Yrs</div>
         </div>
-        
+
         <div class="stat-card glow-purple" style="justify-content: space-between;">
           <div>
             <div class="stat-label">Invest Strategy: Final Wealth</div>
             <div class="stat-value invest" id="statInvest">$0</div>
           </div>
-          <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;" id="statInvestBreakdown">
-             Total Invested: $0<br>
-             Compounded Gains: $0
+          <div
+            style="font-size: 11px; color: var(--text-muted); margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;"
+            id="statInvestBreakdown">
+            Total Invested: $0<br>
+            Compounded Gains: $0
           </div>
         </div>
         <div class="stat-card" id="cardNet">
           <div class="stat-label">Net Strategy Advantage</div>
           <div class="stat-value" id="statNet">—</div>
-          <div id="statNetCtx" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Compare & Choose</div>
+          <div id="statNetCtx" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Compare & Choose
+          </div>
         </div>
 
         <div class="stat-card">
@@ -671,39 +680,39 @@
       let bal = principal;
       let schedule = [];
       let investPool = 0;
-      
+
       const payment = (principal * rate * Math.pow(1 + rate, months)) / (Math.pow(1 + rate, months) - 1);
       if (!principal || isNaN(payment)) return [];
-      
+
       const investMonthlyRate = (state.marketRate / 100) / 12;
 
       for (let m = 1; m <= months; m++) {
         const year = Math.ceil(m / 12);
-        
+
         let intPart = 0;
         let prinPart = 0;
         let extraLump = 0;
-        
+
         if (bal > 0.01) {
-            intPart = bal * rate;
-            prinPart = Math.min(payment - intPart, bal);
-            
-            if (lumpYears.includes(year) && m % 12 === 1) {
-               // Calculate 15% lump sum based on the remaining balance at that point
-               extraLump = bal * 0.15;
-            }
+          intPart = bal * rate;
+          prinPart = Math.min(payment - intPart, bal);
+
+          if (lumpYears.includes(year) && m % 12 === 1) {
+            // Calculate 15% lump sum based on the remaining balance at that point
+            extraLump = bal * 0.15;
+          }
         }
-        
+
         // Compound Investment
         investPool += (investPool * investMonthlyRate);
-        
+
         if (action === 'payoff') {
-            bal = Math.max(0, bal - prinPart - extraLump);
+          bal = Math.max(0, bal - prinPart - extraLump);
         } else if (action === 'invest') {
-            bal = Math.max(0, bal - prinPart);
-            investPool += extraLump; // Deposit into market
+          bal = Math.max(0, bal - prinPart);
+          investPool += extraLump; // Deposit into market
         } else {
-            bal = Math.max(0, bal - prinPart); // Standard
+          bal = Math.max(0, bal - prinPart); // Standard
         }
 
         schedule.push({ month: m, payment, principal: prinPart, interest: intPart, balance: bal, extraLump, investPool });
@@ -762,25 +771,25 @@
 
       // Calculate Net Strategy
       if (!state.stratOn) {
-         els.sNet.innerText = "—";
-         els.sNet.style.color = "var(--text)";
-         els.sNetCtx.innerText = "Enable Simulator";
+        els.sNet.innerText = "—";
+        els.sNet.style.color = "var(--text)";
+        els.sNetCtx.innerText = "Enable Simulator";
       } else {
-         const diff = finalWealth - intSaved;
-         if (diff > 0) {
-            els.sNet.innerText = "Invest Win";
-            els.sNet.style.color = "var(--invest)";
-            els.sNetCtx.innerText = "+" + state.sym + fmt(diff) + " overall value";
-         } else {
-            els.sNet.innerText = "Payoff Win";
-            els.sNet.style.color = "var(--accent)";
-            els.sNetCtx.innerText = "+" + state.sym + fmt(Math.abs(diff)) + " overall value";
-         }
+        const diff = finalWealth - intSaved;
+        if (diff > 0) {
+          els.sNet.innerText = "Invest Win";
+          els.sNet.style.color = "var(--invest)";
+          els.sNetCtx.innerText = "+" + state.sym + fmt(diff) + " overall value";
+        } else {
+          els.sNet.innerText = "Payoff Win";
+          els.sNet.style.color = "var(--accent)";
+          els.sNetCtx.innerText = "+" + state.sym + fmt(Math.abs(diff)) + " overall value";
+        }
       }
 
       // Update Visualization
       renderChart(baseSched, payoffSched, investSched);
-      
+
       // Update Table to reflect the Payoff Strategy specifically as it's the primary loan timeline modification
       clearTimeout(window.tableTimer);
       window.tableTimer = setTimeout(() => { renderTable(payoffSched.filter(r => Math.round(r.balance) > 0 || r.principal > 0)); }, 150);
@@ -804,7 +813,7 @@
         chartInstance.data.datasets[0].data = baseData;
         chartInstance.data.datasets[1].data = payoffData;
         chartInstance.data.datasets[2].data = investData;
-        
+
         chartInstance.data.datasets[1].hidden = !state.stratOn;
         chartInstance.data.datasets[2].hidden = !state.stratOn;
         chartInstance.update();
@@ -818,7 +827,7 @@
       const gradOpt = ctx.createLinearGradient(0, 0, 0, 400);
       gradOpt.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
       gradOpt.addColorStop(1, 'rgba(16, 185, 129, 0)');
-      
+
       const gradInv = ctx.createLinearGradient(0, 0, 0, 400);
       gradInv.addColorStop(0, 'rgba(192, 132, 252, 0.4)');
       gradInv.addColorStop(1, 'rgba(192, 132, 252, 0)');
@@ -887,15 +896,15 @@
             }
           },
           scales: {
-            x: { 
-              grid: { display: false, drawBorder: false }, 
-              ticks: { 
+            x: {
+              grid: { display: false, drawBorder: false },
+              ticks: {
                 maxTicksLimit: 12,
-                callback: function(val, index) {
+                callback: function (val, index) {
                   const label = this.getLabelForValue(val);
                   return label ? label.split(' ')[1] : ''; // Extracts the year string
                 }
-              } 
+              }
             },
             y: { grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false }, beginAtZero: true }
           }
