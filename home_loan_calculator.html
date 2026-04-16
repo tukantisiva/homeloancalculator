@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Loan Calculator - Pro Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-hover: #334155;
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.2);
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.15);
+      --invest: #c084fc;
+      --invest-glow: rgba(192, 132, 252, 0.2);
+      --danger: #ef4444;
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 32px;
+      line-height: 1.5;
+    }
+
+    .dashboard {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 32px;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+      background: linear-gradient(to right, #f8fafc, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin-bottom: 32px;
+    }
+
+    .control-group {
+      margin-bottom: 24px;
+    }
+
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .value-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      color: var(--primary);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      background: var(--surface-hover);
+      border-radius: 3px;
+      outline: none;
+      -webkit-appearance: none;
+      position: relative;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--primary-glow);
+      transition: transform 0.1s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+    
+    .market-slider::-webkit-slider-thumb {
+      background: var(--invest) !important;
+      box-shadow: 0 0 10px var(--invest-glow) !important;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    input[type="number"],
+    input[type="text"],
+    input[type="date"],
+    select {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="number"] {
+      width: 100%;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    .strategic-box {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.1));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-top: 32px;
+      transition: all 0.3s ease;
+    }
+
+    .strategic-box.inactive {
+      opacity: 0.6;
+      filter: grayscale(0.8);
+      border-color: var(--border);
+    }
+
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      margin-bottom: 12px;
+    }
+
+    .toggle-title {
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--surface-hover);
+      transition: .4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked+.slider {
+      background-color: var(--accent);
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(20px);
+    }
+
+    /* Right Side */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border);
+      padding: 20px;
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .stat-card.glow-green::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+    
+    .stat-card.glow-purple::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--invest);
+      box-shadow: 0 0 10px var(--invest-glow);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 26px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .stat-value.green {
+      color: var(--accent);
+    }
+    
+    .stat-value.invest {
+      color: var(--invest);
+    }
+
+    .stat-value.primary {
+      color: var(--primary);
+    }
+
+    .chart-container {
+      height: 380px;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+
+    /* Amortization Table */
+    .table-container {
+      margin-top: 32px;
+      background: rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .table-header {
+      display: grid;
+      grid-template-columns: 100px 1.2fr 1fr 1fr 1fr;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+
+    .table-body {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .table-body::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .table-body::-webkit-scrollbar-thumb {
+      background: var(--surface-hover);
+      border-radius: 3px;
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 100px 1.2fr 1fr 1fr 1fr;
+      padding: 14px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+
+    .table-row:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .table-row.lump-row {
+      background: rgba(16, 185, 129, 0.05);
+      border-left: 3px solid var(--accent);
+    }
+
+    .badge {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--accent);
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      display: inline-block;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="dashboard">
+    <!-- Left Controls Panel -->
+    <div class="panel">
+      <h1>Pro Loan Engine</h1>
+      <p class="subtitle">Interactive payoff visualization</p>
+
+      <div class="control-group">
+        <label>Settings & Currency</label>
+        <div class="input-row">
+          <input type="date" id="startDate">
+          <select id="currency">
+            <option value="د.إ" selected>AED (د.إ)</option>
+            <option value="₹">INR (₹)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <label>Loan Amount</label>
+          <div class="value-display" id="loanAmtVal">د.إ400,000</div>
+        </div>
+        <input type="range" id="loanRange" min="50000" max="2000000" step="5000" value="400000">
+        <div class="input-row"><input type="number" id="loanAmtInput" value="400000"></div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <label>Down Payment</label>
+          <div class="value-display" id="downAmtVal">د.إ80,000</div>
+        </div>
+        <input type="range" id="downRange" min="0" max="500000" step="5000" value="80000">
+        <div class="input-row"><input type="number" id="downAmtInput" value="80000"></div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <label>Interest Rate (%)</label>
+          <div class="value-display" id="rateVal">6.5%</div>
+        </div>
+        <input type="range" id="rateRange" min="1" max="15" step="0.1" value="6.5">
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <label>Duration (Years)</label>
+          <div class="value-display" id="durVal">30 yrs</div>
+        </div>
+        <input type="range" id="durRange" min="5" max="40" step="1" value="30">
+      </div>
+
+      <div class="strategic-box inactive" id="stratBox">
+        <div class="toggle-wrap" onclick="document.getElementById('stratToggle').click()">
+          <div class="toggle-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            Opportunity Cost Simulator
+          </div>
+          <label class="switch" onclick="event.stopPropagation()">
+            <input type="checkbox" id="stratToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px; line-height: 1.4;">
+          Computes a 15% lump-sum payload at the start of specific years. Simulates both <span style="color:var(--accent); font-weight:600">Payoff Strategy</span> and <span style="color:var(--invest); font-weight:600">Invest Strategy</span> simultaneously.
+        </p>
+        
+        <div id="stratControls" style="display:none;">
+          <div class="control-group" style="margin-bottom:12px">
+            <label style="color:var(--accent);">Activation Years</label>
+            <input type="text" id="lumpYears" value="2, 5, 10" style="margin-top:8px; border-color: rgba(16,185,129,0.3)">
+          </div>
+          
+          <div class="control-group" style="margin-bottom:0; padding-top:12px; border-top:1px solid rgba(255,255,255,0.05)">
+            <div class="control-header">
+              <label style="color:var(--invest);">Est. Market Return (% Yearly)</label>
+              <div class="value-display" id="marketRateVal" style="color:var(--invest); background: rgba(192,132,252,0.1);">8.0%</div>
+            </div>
+            <input type="range" id="marketRateRange" class="market-slider" min="1" max="25" step="0.1" value="8.0">
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.3;">
+              Transparency: Calculates monthly compounding on your lump-sum injections. Historically, the S&P 500 averages ~10% annually, while conservative portfolios range 5-8%.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Data Panel -->
+    <div class="panel">
+
+      <div class="summary-grid">
+        <div class="stat-card glow-green">
+          <div class="stat-label">Payoff Strategy: Interest Saved</div>
+          <div class="stat-value green" id="statSaved">$0</div>
+          <div id="statSavedCtx" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">out of $0</div>
+        </div>
+        <div class="stat-card glow-green">
+          <div class="stat-label">Payoff Strategy: Time Saved</div>
+          <div class="stat-value green" id="statTime">0 Yrs</div>
+          <div id="statTimeCtx" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">out of 0 Yrs</div>
+        </div>
+        
+        <div class="stat-card glow-purple" style="justify-content: space-between;">
+          <div>
+            <div class="stat-label">Invest Strategy: Final Wealth</div>
+            <div class="stat-value invest" id="statInvest">$0</div>
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;" id="statInvestBreakdown">
+             Total Invested: $0<br>
+             Compounded Gains: $0
+          </div>
+        </div>
+        <div class="stat-card" id="cardNet">
+          <div class="stat-label">Net Strategy Advantage</div>
+          <div class="stat-value" id="statNet">—</div>
+          <div id="statNetCtx" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Compare & Choose</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Principal Financed</div>
+          <div class="stat-value primary" id="statPrincipal">$0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Accelerated Payoff Date</div>
+          <div class="stat-value" id="statDate" style="font-size: 20px; font-family:'Outfit', sans-serif;">—</div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="timelineChart"></canvas>
+      </div>
+
+      <div class="table-container">
+        <div class="table-header">
+          <div>Date</div>
+          <div>Lump Sum</div>
+          <div>Principal</div>
+          <div>Interest</div>
+          <div>Balance</div>
+        </div>
+        <div class="table-body" id="amortTable">
+          <!-- Rows injected via JS -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // App State
+    let state = {
+      sym: 'د.إ',
+      loanAmt: 400000,
+      downAmt: 80000,
+      rate: 6.5,
+      dur: 30,
+      stratOn: false,
+      stratYears: [2, 5, 10],
+      marketRate: 8.0,
+      start: new Date()
+    };
+
+    let chartInstance = null;
+
+    // Elements Binding
+    const els = {
+      cur: document.getElementById('currency'),
+      start: document.getElementById('startDate'),
+      loanR: document.getElementById('loanRange'),
+      loanI: document.getElementById('loanAmtInput'),
+      loanV: document.getElementById('loanAmtVal'),
+      downR: document.getElementById('downRange'),
+      downI: document.getElementById('downAmtInput'),
+      downV: document.getElementById('downAmtVal'),
+      rateR: document.getElementById('rateRange'),
+      rateV: document.getElementById('rateVal'),
+      durR: document.getElementById('durRange'),
+      durV: document.getElementById('durVal'),
+      tog: document.getElementById('stratToggle'),
+      box: document.getElementById('stratBox'),
+      ctrls: document.getElementById('stratControls'),
+      lumpI: document.getElementById('lumpYears'),
+      markR: document.getElementById('marketRateRange'),
+      markV: document.getElementById('marketRateVal'),
+      // Stats
+      sSaved: document.getElementById('statSaved'),
+      sSavedCtx: document.getElementById('statSavedCtx'),
+      sTime: document.getElementById('statTime'),
+      sTimeCtx: document.getElementById('statTimeCtx'),
+      sInvest: document.getElementById('statInvest'),
+      sInvestBd: document.getElementById('statInvestBreakdown'),
+      sNet: document.getElementById('statNet'),
+      sNetCtx: document.getElementById('statNetCtx'),
+      sPrin: document.getElementById('statPrincipal'),
+      sDate: document.getElementById('statDate'),
+      // View
+      tb: document.getElementById('amortTable')
+    };
+
+    // Formatters
+    const fmt = n => Math.round(n).toLocaleString();
+    const fmtK = n => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Math.round(n);
+    const animateValue = (el, start, end, duration) => {
+      let startTimestamp = null;
+      const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 4);
+        const current = start + (end - start) * ease;
+        el.innerText = state.sym + fmt(current);
+        if (progress < 1) window.requestAnimationFrame(step);
+        else el.innerText = state.sym + fmt(end);
+      };
+      window.requestAnimationFrame(step);
+    }
+
+    function updateInputs() {
+      state.loanAmt = parseFloat(els.loanR.value);
+      state.downAmt = parseFloat(els.downR.value);
+      state.rate = parseFloat(els.rateR.value);
+      state.dur = parseInt(els.durR.value);
+      state.marketRate = parseFloat(els.markR.value);
+
+      els.loanI.value = state.loanAmt;
+      els.loanV.innerText = state.sym + fmt(state.loanAmt);
+
+      els.downI.value = state.downAmt;
+      els.downV.innerText = state.sym + fmt(state.downAmt);
+
+      els.rateV.innerText = state.rate.toFixed(1) + '%';
+      els.durV.innerText = state.dur + ' yrs';
+      els.markV.innerText = state.marketRate.toFixed(1) + '%';
+
+      runEngine();
+    }
+
+    function syncTextInputs() {
+      els.loanR.value = els.loanI.value;
+      els.downR.value = els.downI.value;
+      updateInputs();
+    }
+
+    // Setup Listeners
+    els.start.valueAsDate = state.start;
+    els.start.addEventListener('change', e => { state.start = new Date(e.target.value); runEngine(); });
+    els.cur.addEventListener('change', e => { state.sym = e.target.value; updateInputs(); });
+
+    [els.loanR, els.downR, els.rateR, els.durR, els.markR].forEach(el => el.addEventListener('input', updateInputs));
+    [els.loanI, els.downI].forEach(el => el.addEventListener('change', syncTextInputs));
+
+    els.tog.addEventListener('change', e => {
+      state.stratOn = e.target.checked;
+      els.box.classList.toggle('inactive', !state.stratOn);
+      els.ctrls.style.display = state.stratOn ? 'block' : 'none';
+      runEngine();
+    });
+
+    els.lumpI.addEventListener('input', e => {
+      state.stratYears = e.target.value.split(',').map(s => parseInt(s)).filter(n => !isNaN(n));
+      if (state.stratOn) runEngine();
+    });
+
+    // Engine Core
+    function calcAmortization(principal, rate, months, lumpYears, action) {
+      // action = 'none', 'payoff', 'invest'
+      let bal = principal;
+      let schedule = [];
+      let investPool = 0;
+      
+      const payment = (principal * rate * Math.pow(1 + rate, months)) / (Math.pow(1 + rate, months) - 1);
+      if (!principal || isNaN(payment)) return [];
+      
+      const investMonthlyRate = (state.marketRate / 100) / 12;
+
+      for (let m = 1; m <= months; m++) {
+        const year = Math.ceil(m / 12);
+        
+        let intPart = 0;
+        let prinPart = 0;
+        let extraLump = 0;
+        
+        if (bal > 0.01) {
+            intPart = bal * rate;
+            prinPart = Math.min(payment - intPart, bal);
+            
+            if (lumpYears.includes(year) && m % 12 === 1) {
+               // Calculate 15% lump sum based on the remaining balance at that point
+               extraLump = bal * 0.15;
+            }
+        }
+        
+        // Compound Investment
+        investPool += (investPool * investMonthlyRate);
+        
+        if (action === 'payoff') {
+            bal = Math.max(0, bal - prinPart - extraLump);
+        } else if (action === 'invest') {
+            bal = Math.max(0, bal - prinPart);
+            investPool += extraLump; // Deposit into market
+        } else {
+            bal = Math.max(0, bal - prinPart); // Standard
+        }
+
+        schedule.push({ month: m, payment, principal: prinPart, interest: intPart, balance: bal, extraLump, investPool });
+      }
+      return schedule;
+    }
+
+    function runEngine() {
+      const principal = Math.max(0, state.loanAmt - state.downAmt);
+      const monthlyRate = (state.rate / 100) / 12;
+      const totalMonths = state.dur * 12;
+
+      // Simulate 3 parallel timelines
+      const baseSched = calcAmortization(principal, monthlyRate, totalMonths, [], 'none');
+      const payoffSched = state.stratOn ? calcAmortization(principal, monthlyRate, totalMonths, state.stratYears, 'payoff') : baseSched;
+      const investSched = state.stratOn ? calcAmortization(principal, monthlyRate, totalMonths, state.stratYears, 'invest') : baseSched;
+
+      // Extract endpoints based on when bal hits 0
+      const baseLen = baseSched.filter(r => r.balance > 0.01).length;
+      const payoffLen = payoffSched.filter(r => r.balance > 0.01).length;
+
+      // Compute Stats
+      const baseInt = baseSched.reduce((s, r) => s + r.interest, 0);
+      const payoffInt = payoffSched.reduce((s, r) => s + r.interest, 0);
+      const intSaved = Math.max(0, baseInt - payoffInt);
+      const timeSaved = ((baseLen - payoffLen) / 12).toFixed(1);
+
+      // Wealth generated from the invested lumpsums
+      const finalWealth = investSched[investSched.length - 1].investPool;
+      const totalInjected = investSched.reduce((s, r) => s + r.extraLump, 0);
+      const totalGains = Math.max(0, finalWealth - totalInjected);
+
+      // End Date from accelerated payoff
+      const endDate = new Date(state.start);
+      endDate.setMonth(endDate.getMonth() + payoffLen);
+
+      // UI Animation Triggers
+      const currentSaved = parseFloat(els.sSaved.innerText.replace(/[^0-9.-]+/g, "")) || 0;
+      animateValue(els.sSaved, currentSaved, intSaved, 600);
+
+      const currentWealth = parseFloat(els.sInvest.innerText.replace(/[^0-9.-]+/g, "")) || 0;
+      animateValue(els.sInvest, currentWealth, finalWealth, 600);
+      if (state.stratOn) {
+        els.sInvestBd.innerHTML = `Total Injected: ${state.sym}${fmt(totalInjected)}<br><span style="color:var(--invest)">Compounded Gains: +${state.sym}${fmt(totalGains)}</span>`;
+      } else {
+        els.sInvestBd.innerHTML = 'Total Injected: $0<br>Compounded Gains: $0';
+      }
+
+      const currentPrin = parseFloat(els.sPrin.innerText.replace(/[^0-9.-]+/g, "")) || 0;
+      animateValue(els.sPrin, currentPrin, principal, 600);
+
+      els.sTime.innerText = timeSaved + ' Yrs';
+      els.sTimeCtx.innerText = `out of ${state.dur} Yrs`;
+      els.sSavedCtx.innerText = `out of ${state.sym}${fmt(baseInt)}`;
+      els.sDate.innerText = endDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
+
+      // Calculate Net Strategy
+      if (!state.stratOn) {
+         els.sNet.innerText = "—";
+         els.sNet.style.color = "var(--text)";
+         els.sNetCtx.innerText = "Enable Simulator";
+      } else {
+         const diff = finalWealth - intSaved;
+         if (diff > 0) {
+            els.sNet.innerText = "Invest Win";
+            els.sNet.style.color = "var(--invest)";
+            els.sNetCtx.innerText = "+" + state.sym + fmt(diff) + " overall value";
+         } else {
+            els.sNet.innerText = "Payoff Win";
+            els.sNet.style.color = "var(--accent)";
+            els.sNetCtx.innerText = "+" + state.sym + fmt(Math.abs(diff)) + " overall value";
+         }
+      }
+
+      // Update Visualization
+      renderChart(baseSched, payoffSched, investSched);
+      
+      // Update Table to reflect the Payoff Strategy specifically as it's the primary loan timeline modification
+      clearTimeout(window.tableTimer);
+      window.tableTimer = setTimeout(() => { renderTable(payoffSched.filter(r => Math.round(r.balance) > 0 || r.principal > 0)); }, 150);
+    }
+
+    function renderChart(base, payoff, invest) {
+      const startDt = new Date(state.start);
+      const labels = base.map((_, i) => {
+        const d = new Date(startDt);
+        d.setMonth(d.getMonth() + i);
+        return d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+      });
+      const baseData = base.map(r => r.balance);
+      const payoffData = payoff.map(r => r.balance);
+      const investData = invest.map(r => r.investPool);
+
+      const ctx = document.getElementById('timelineChart').getContext('2d');
+
+      if (chartInstance) {
+        chartInstance.data.labels = labels;
+        chartInstance.data.datasets[0].data = baseData;
+        chartInstance.data.datasets[1].data = payoffData;
+        chartInstance.data.datasets[2].data = investData;
+        
+        chartInstance.data.datasets[1].hidden = !state.stratOn;
+        chartInstance.data.datasets[2].hidden = !state.stratOn;
+        chartInstance.update();
+        return;
+      }
+
+      const gradBase = ctx.createLinearGradient(0, 0, 0, 400);
+      gradBase.addColorStop(0, 'rgba(56, 189, 248, 0.3)');
+      gradBase.addColorStop(1, 'rgba(56, 189, 248, 0)');
+
+      const gradOpt = ctx.createLinearGradient(0, 0, 0, 400);
+      gradOpt.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+      gradOpt.addColorStop(1, 'rgba(16, 185, 129, 0)');
+      
+      const gradInv = ctx.createLinearGradient(0, 0, 0, 400);
+      gradInv.addColorStop(0, 'rgba(192, 132, 252, 0.4)');
+      gradInv.addColorStop(1, 'rgba(192, 132, 252, 0)');
+
+      Chart.defaults.color = '#94a3b8';
+      Chart.defaults.font.family = 'Outfit';
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Standard Balance',
+              data: baseData,
+              borderColor: '#38bdf8',
+              backgroundColor: gradBase,
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 0,
+              pointHitRadius: 20
+            },
+            {
+              label: 'Aggressive Payoff Balance',
+              data: payoffData,
+              borderColor: '#10b981',
+              backgroundColor: gradOpt,
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 0,
+              pointHitRadius: 20,
+              hidden: !state.stratOn
+            },
+            {
+              label: 'Investment Wealth Growth',
+              data: investData,
+              borderColor: '#c084fc',
+              backgroundColor: gradInv,
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 0,
+              pointHitRadius: 20,
+              hidden: !state.stratOn
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { position: 'top', labels: { boxWidth: 12, usePointStyle: true } },
+            tooltip: {
+              backgroundColor: '#1e293b',
+              titleColor: '#f8fafc',
+              bodyColor: '#e2e8f0',
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+              borderWidth: 1,
+              padding: 12,
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ${state.sym}${fmt(ctx.raw)}`
+              }
+            }
+          },
+          scales: {
+            x: { 
+              grid: { display: false, drawBorder: false }, 
+              ticks: { 
+                maxTicksLimit: 12,
+                callback: function(val, index) {
+                  const label = this.getLabelForValue(val);
+                  return label ? label.split(' ')[1] : ''; // Extracts the year string
+                }
+              } 
+            },
+            y: { grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function renderTable(sched) {
+      let html = '';
+      const startDt = new Date(state.start);
+      const rowsToRender = Math.min(sched.length, 600);
+
+      for (let i = 0; i < rowsToRender; i++) {
+        const r = sched[i];
+        const rowDate = new Date(startDt);
+        rowDate.setMonth(startDt.getMonth() + r.month);
+        const dStr = rowDate.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+
+        const isLump = r.extraLump > 0;
+
+        html += `<div class="table-row ${isLump ? 'lump-row' : ''}">
+          <div style="color:var(--text-muted)">${dStr}</div>
+          <div>${isLump ? '<span class="badge">' + state.sym + fmtK(r.extraLump) + '</span>' : '<span style="opacity:0.3">—</span>'}</div>
+          <div>${state.sym}${fmtK(r.principal)}</div>
+          <div>${state.sym}${fmtK(r.interest)}</div>
+          <div style="color:var(--primary); font-weight:600;">${state.sym}${fmt(r.balance)}</div>
+        </div>`;
+      }
+      els.tb.innerHTML = html;
+    }
+
+    // Init
+    updateInputs();
+
+  </script>
+</body>
+
+</html>
